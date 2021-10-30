@@ -1,14 +1,13 @@
 import graphviz
 
-
 counter = 0
 
-def create_diagram(root):
+def draw_tree(root):
     graph = graphviz.Graph(comment='Huffman Coding Binary Tree', format="png")
-    create_diagram_internal(graph, root, None, "")
+    construct_tree(graph, root, None, "")
     graph.render('graph.gv', view=True)
 
-def create_diagram_internal(graph, root, parent, parent_uid):
+def construct_tree(graph, root, parent, parent_uid):
     global counter
     uid = str(counter)
     counter += 1
@@ -16,6 +15,6 @@ def create_diagram_internal(graph, root, parent, parent_uid):
     if parent:
         graph.edge(parent_uid, uid)
     if root.l:
-        create_diagram_internal(graph, root.l, root, uid)
+        construct_tree(graph, root.l, root, uid)
     if root.r:
-        create_diagram_internal(graph, root.r, root, uid)
+        construct_tree(graph, root.r, root, uid)
