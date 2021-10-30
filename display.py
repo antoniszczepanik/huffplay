@@ -6,7 +6,7 @@ counter = 0
 def create_diagram(root):
     graph = graphviz.Graph(comment='Huffman Coding Binary Tree', format="png")
     create_diagram_internal(graph, root, None, "")
-    graph.render('graph.png', view=True)
+    graph.render('graph.gv', view=True)
 
 def create_diagram_internal(graph, root, parent, parent_uid):
     global counter
