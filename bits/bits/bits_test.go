@@ -19,6 +19,16 @@ func TestBitSlice_Append(t *testing.T) {
 	compareBoolSlices(t, append(someBits, someBits...), actualBits)
 }
 
+func TestBitSlice_ReadAll(t *testing.T) {
+	inputBits := []bool{true, true, true, true, true, true, true, true, true}
+	bs := NewBitSet(inputBits)
+	actualBytes, err := bs.ReadAll()
+	if err != nil {
+		t.Errorf("ReadAll: %w", err)
+	}
+	compareByteSlices(t, []byte{255 , 1}, actualBytes)
+}
+
 func TestBitSlice_Read(t *testing.T) {
 	tests := []struct {
 		name                string
@@ -59,7 +69,7 @@ func TestBitSlice_Read(t *testing.T) {
 	}
 	for _, test := range tests {
 		bs := NewBitSet(test.inputBits)
-		expectedOutputLenght := getExpectedOuputLength(test.inputBits)
+		expectedOutputLenght := getByteCount(len(test.inputBits))
 		outputBuffer := make([]byte, expectedOutputLenght)
 		p, err := bs.Read(outputBuffer)
 		if test.expectedErr != nil {

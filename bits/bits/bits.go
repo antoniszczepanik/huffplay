@@ -3,6 +3,7 @@ package bits
 import (
 	"fmt"
 	"io"
+	"errors"
 )
 
 type BitSet struct {
@@ -16,6 +17,18 @@ func NewBitSet(bits []bool) *BitSet {
 	return &BitSet{
 		bits: bits,
 	}
+}
+
+func (bs *BitSet) ReadAll() ([]byte, error) {
+	byteBuffer := make([]byte, getByteCount(len(bs.bits)))
+	n, err := bs.Read(byteBuffer)
+	if n != len(byteBuffer) {
+		return []byte{}, fmt.Errorf("could not read all bytes: %d out of %d", n, len(byteBuffer))
+	}
+	if !errors.Is(err, io.EOF) {
+		return []byte{}, fmt.Errorf("read BitSet: %w", err)
+	}
+	return byteBuffer, nil
 }
 
 func (bs *BitSet) Read(p []byte) (int, error) {
@@ -78,6 +91,13 @@ func bitsToByte(bits byteArray) byte {
 		}
 	}
 	return result
+}
+
+func getByteCount(bitCount int) int {
+	if bitCount == 0 {
+		return 0
+	}
+	return (bitCount - 1) / 8 + 1
 }
 
 func b2i(b bool) byte {
