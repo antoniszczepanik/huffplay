@@ -2,8 +2,10 @@ package main
 
 import (
 	"fmt"
+	"github.com/antoniszczepanik/lzhcomp/bits"
 )
 
 func main() {
-	fmt.Println("Hello, World!")
+	bs := bits.NewBitSet([]bool{false, true, false})
+	fmt.Println(bs.ReadBits())
 }

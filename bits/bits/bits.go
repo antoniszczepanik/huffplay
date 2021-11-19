@@ -1,4 +1,4 @@
-package main
+package bits
 
 import (
 	"fmt"
@@ -10,6 +10,7 @@ type BitSet struct {
 }
 
 type byteArray [8]bool
+
 
 func NewBitSet(bits []bool) *BitSet {
 	return &BitSet{
@@ -27,6 +28,15 @@ func (bs *BitSet) Read(p []byte) (int, error) {
 		p[i] = bitsToByte(chunks[i])
 	}
 	return i, io.EOF
+}
+
+func (bs *BitSet) ReadBits() []bool {
+	return bs.bits
+}
+
+func (bs *BitSet) AppendBits(bits []bool) error {
+	bs.bits = append(bs.bits, bits...)
+	return nil
 }
 
 // Split BitSet into byte length arrays.
@@ -55,15 +65,6 @@ func getChunks(bits []bool) []byteArray {
 		}
 	}
 	return result
-}
-
-func (bs *BitSet) ReadBits() []bool {
-	return bs.bits
-}
-
-func (bs *BitSet) AppendBits(bits []bool) error {
-	bs.bits = append(bs.bits, bits...)
-	return nil
 }
 
 // Convert byte lenght array of bits into byte.
