@@ -1,21 +1,25 @@
 package bits
 
 import (
+	"errors"
 	"fmt"
 	"io"
-	"errors"
 )
 
 type BitSet struct {
 	bits []bool
+
+	// batchChangeIndicator stores indexes at which data has been appended to
+	// a bitset. It allows to display a bitset in a nice, debuggable way.
+	batchChangeIndicator []int
 }
 
 type byteArray [8]bool
 
-
 func NewBitSet(bits []bool) *BitSet {
 	return &BitSet{
-		bits: bits,
+		bits:                 bits,
+		batchChangeIndicator: []int{0}, // Start the first batch.
 	}
 }
 
@@ -48,8 +52,53 @@ func (bs *BitSet) ReadBits() []bool {
 }
 
 func (bs *BitSet) AppendBits(bits []bool) error {
+	bs.batchChangeIndicator = append(bs.batchChangeIndicator, len(bs.bits))
 	bs.bits = append(bs.bits, bits...)
 	return nil
+}
+
+func (bs *BitSet) String() string {
+	var (
+		batchFlag                  bool
+		result                     string
+		bitCounter                 int
+		batchChangeIndicatorOffset int
+	)
+	bitChunks := getChunks(bs.bits)
+	for _, singleByte := range bitChunks {
+		for _, bit := range singleByte {
+			if batchChangeIndicatorOffset < len(bs.batchChangeIndicator) &&
+				bitCounter == bs.batchChangeIndicator[batchChangeIndicatorOffset] {
+				batchFlag = !batchFlag
+				batchChangeIndicatorOffset += 1
+			}
+			result += getColoredBit(bit, batchFlag)
+			bitCounter += 1
+		}
+		result += "\n"
+	}
+	return result
+}
+
+func getColoredBit(bit bool, color bool) string {
+	if color {
+		return ansiEscapeRed(bit)
+	}
+	return ansiEscapeGreen(bit)
+}
+
+func ansiEscapeRed(bit bool) string {
+	if bit {
+		return fmt.Sprintf("\u001b[31m%d\u001b[0m", 1)
+	}
+	return fmt.Sprintf("\u001b[31m%d\u001b[0m", 0)
+}
+
+func ansiEscapeGreen(bit bool) string {
+	if bit {
+		return fmt.Sprintf("\u001b[32m%d\u001b[0m", 1)
+	}
+	return fmt.Sprintf("\u001b[32m%d\u001b[0m", 0)
 }
 
 // Split BitSet into byte length arrays.
@@ -97,7 +146,7 @@ func getByteCount(bitCount int) int {
 	if bitCount == 0 {
 		return 0
 	}
-	return (bitCount - 1) / 8 + 1
+	return (bitCount-1)/8 + 1
 }
 
 func b2i(b bool) byte {

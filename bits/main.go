@@ -7,5 +7,8 @@ import (
 
 func main() {
 	bs := bits.NewBitSet([]bool{false, true, false})
-	fmt.Println(bs.ReadBits())
+	bs.AppendBits([]bool{true, true, true, false, true, false, true, false})
+	bs.AppendBits([]bool{true, true, true, false, true, false, true, false})
+	bs.AppendBits([]bool{true, true, true, false, true, false, true, false})
+	fmt.Println(bs)
 }
