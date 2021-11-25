@@ -2,6 +2,7 @@
 
 import os
 import sys
+import queue
 from collections import defaultdict
 
 from display import draw_tree
@@ -33,12 +34,16 @@ def decompress(binary_data, translation_table):
 
 
 def construct_tree(nodes):
-    while len(nodes) > 1:
+    # Create and construct a priority queue.
+    q = queue.PriorityQueue()
+    for n in nodes:
+        q.put(n)
+    while q.qsize() > 1:
         nodes = sorted(nodes, key=lambda n: n.freq, reverse=True)
-        r, l = nodes.pop(), nodes.pop()
-        parent = Node(freq=r.freq+l.freq, l=l, r=r)
-        nodes += [parent]
-    return nodes[0]
+        r, l = q.get(), q.get()
+        q.put(Node(freq=r.freq+l.freq, l=l, r=r))
+    assert q.qsize() == 1, "Queue should have len of 1 after tree construction"
+    return q.get()
 
 # This method that this is correct huffman tree which means it is full binary
 # tree.
@@ -67,9 +72,22 @@ class Node():
         node_type = "Leaf" if self.letter else "Node"
         return f"{node_type}(freq={self.freq}, letter={self.letter})"
 
+    def __lt__(self, other):
+        return self.freq < other.freq
+    def __le__(self, other):
+        return self.freq <= other.freq
+    def __eq__(self, other):
+        return self.freq == other.freq
+    def __ne__(self, other):
+        return self.freq != other.freq
+    def __gt__(self, other):
+        return self.freq > other.freq
+    def __ge__(self, other):
+        return self.freq >= other.freq
+
 if __name__ == "__main__":
     raw_data = "".join(sys.stdin.readlines())
     binary, translation_table = compress(raw_data)
-    print(f"Binary: {len(binary)}")
+    print(f"Binary: {len(binary)//8/1_000_000:.2f}Mb")
     original_data = decompress(binary, {v: k for k, v in translation_table.items()})
-    print(f"Original data: {len(original_data.encode('utf-8'))*8}")
+    print(f"Original data: {len(original_data.encode('utf-8'))/1_000_000:.2f}Mb")
